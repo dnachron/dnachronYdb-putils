@@ -21,7 +21,7 @@ class YMutations(models.Model):
     comment = models.TextField(blank=True, null=True)
 
     def __str__(self):
-        return f"{str(self.position)} {self.ancestral} {self.derived}"
+        return f"{self.name} ({str(self.position)} {self.ancestral} {self.derived})"
 
     class Meta:
         db_table = "ymutation"
