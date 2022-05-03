@@ -77,27 +77,22 @@ def _generate_vcf(verbose, file_exc):
                 last_mutation = mutation
 
 
-def generate_vcf(args):
+def generate_vcf(output, output_type, verbose):
     # check args first
     if sys.version_info < (3, 7):
         print("ERROR: Please upgrade your Python version to 3.7.0 or higher")
         sys.exit(1)
 
-    if (
-        args.output_type is None
-        and args.output.name.lower().endswith(".gz")
-        or args.output_type is not None
-        and args.output_type == "z"
-    ):
-        if isinstance(args.output, io.TextIOWrapper):
+    if output_type is None and output.name.lower().endswith(".gz") or output_type is not None and output_type == "z":
+        if isinstance(output, io.TextIOWrapper):
             print(
                 "ERROR: You can't output compressed VCF to STDOUT unless upgrade your Python version to 3.10.3 or higher"
             )
             sys.exit(1)
 
-        cm = gzip.open(args.output, "wb")
+        cm = gzip.open(output, "wb")
     else:
-        cm = nullcontext(args.output)
+        cm = nullcontext(output)
 
     with cm as file_exc:
-        _generate_vcf(args.verbose, file_exc)
+        _generate_vcf(verbose, file_exc)

@@ -21,33 +21,39 @@ import argparse
 from tools.vcf import generate_vcf
 
 
-def annot(args):
+def vcf(args, parsers):
+    if args.output is None:
+        parsers["vcf"].print_help()
+        return
+    generate_vcf(args.output, args.output_type, args.verbose)
+
+
+def annot(args, parsers):
     print(args)
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     subparsers = parser.add_subparsers()
+    parsers = {}
 
     # create the parser for the "vcf" command
-    parser_foo = subparsers.add_parser(
+    parsers["vcf"] = subparsers.add_parser(
         "vcf",
         description="Generate mutation vcf file for common bio-tools use. \
             E.g., you can annotate the name to your vcf with this vcf by bcftools annotate directly.",
         help="generate mutation vcf file for common bio-tools use",
     )
-    parser_foo.add_argument(
-        "-o",
-        "--output",
+    parsers["vcf"].add_argument(
+        "output",
         type=argparse.FileType("wb"),
         nargs="?",
-        default="-",
-        help="the output file, default is STDOUT",
+        help="the output file, you can output to STDOUT by -",
     )
-    parser_foo.add_argument(
+    parsers["vcf"].add_argument(
         "-v", "--verbose", action="store_true", help="include all duplicated names, otherwise only the first name"
     )
-    parser_foo.add_argument(
+    parsers["vcf"].add_argument(
         "-O",
         "--output-type",
         type=str,
@@ -55,18 +61,18 @@ if __name__ == "__main__":
         help="v/z: un/compressed VCF, \
         if not specified, it will be detected automatically by output file name, or u if can't",
     )
-    parser_foo.set_defaults(func=generate_vcf)
+    parsers["vcf"].set_defaults(func=vcf)
 
     # create the parser for the "annot" command
-    parser_bar = subparsers.add_parser(
+    parsers["annot"] = subparsers.add_parser(
         "annot",
         description="Annotate positions with mutation name and other info.",
         help="annotate positions with mutation name and other info",
     )
-    parser_bar.set_defaults(func=annot)
+    parsers["annot"].set_defaults(func=annot)
 
     args = parser.parse_args()
     if "func" in args:
-        args.func(args)
+        args.func(args, parsers)
     else:
         parser.print_help()
