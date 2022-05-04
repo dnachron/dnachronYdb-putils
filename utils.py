@@ -2,8 +2,6 @@
 import os
 import sys
 
-from tools.lift import CoordinateCoverter, LiftOverPositions
-
 # check before start django
 if not os.path.exists(os.path.join(os.path.dirname(os.path.realpath(__file__)), "dnachronYdb/dnachronYdb.sqlite3")):
     print("Can't find the database file dnachronYdb.sqlite3 at dnachronYdb/dnachronYdb.sqlite3.")
@@ -22,6 +20,8 @@ import argparse
 
 from tools.vcf import generate_vcf
 from tools.annotate import AnnotateMutation
+from tools.lift import CoordinateCoverter, LiftOverPositions
+from tools.transfer import TransferMutation
 from tools.constant import ReferencesBuilds
 
 
@@ -77,6 +77,17 @@ def lift(args, parsers):
         args.input, args.output, convert_build(args.source_build), convert_build(args.target_build), args.hide_header
     )
     lift_over.lift_over()
+
+
+def trans(args, parsers):
+    if args.input is None:
+        parsers["trans"].print_help()
+        return
+
+    mutation_transfer = TransferMutation(
+        args.input, args.output, convert_build(args.build), args.hide_header, args.hide_hg38, args.hide_real_name
+    )
+    mutation_transfer.transfer()
 
 
 if __name__ == "__main__":
@@ -160,7 +171,48 @@ if __name__ == "__main__":
 
     parsers["annot"].set_defaults(func=annot)
 
-    # create the parser for the "annot" command
+    # create the parser for the "trans" command
+    parsers["trans"] = subparsers.add_parser(
+        "trans",
+        description="Transfer mutation name to position, ancestral, derived. \
+            The input should be a list of mutation names, each name one line. \
+                Or simply use csv format file. You can test with testdata/names.csv. \
+                    Duplicated names will be removed.",
+        help="transfer mutation name to position, ancestral, derived",
+    )
+    parsers["trans"].add_argument(
+        "input",
+        type=argparse.FileType("rt"),
+        nargs="?",
+        help="the input file, you can input from STDIN by -",
+    )
+    parsers["trans"].add_argument(
+        "-o",
+        "--output",
+        type=argparse.FileType("wt"),
+        nargs="?",
+        default="-",
+        help="the output file, default to STDOUT if not specified",
+    )
+    parsers["trans"].add_argument(
+        "-b",
+        "--build",
+        type=str.lower,
+        choices=["hg19", "hg38", "cp086569.1", "cp086569.2"],
+        default="hg38",
+        help="the reference build, default is hg38",
+    )
+    parsers["trans"].add_argument("-H", "--hide_header", action="store_true", help="don't output header")
+    parsers["trans"].add_argument(
+        "-B", "--hide_hg38", action="store_true", help="don't output hg38 position if build is not hg38"
+    )
+    parsers["trans"].add_argument(
+        "-N", "--hide_real_name", action="store_true", help="don't output real name in database"
+    )
+
+    parsers["trans"].set_defaults(func=trans)
+
+    # create the parser for the "lift" command
     parsers["lift"] = subparsers.add_parser(
         "lift",
         description="Lift over positions between different reference builds. \

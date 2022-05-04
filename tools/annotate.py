@@ -6,7 +6,7 @@ from pyfaidx import Fasta
 from models.models import YMutations
 from tools.lift import CoordinateCoverter
 
-from .constant import HEADER, ReferencesBuilds
+from .constant import DATABASE_BUILD, HEADER
 
 
 def _trim_mutation(mutation, ancestral, ancestral_len, derived, derived_len):
@@ -143,8 +143,8 @@ class AnnotateMutation:
 
     def _add_mutation(self, row):
         position = int(row[0])
-        if self._build != ReferencesBuilds.HG38:
-            new_position = CoordinateCoverter.convert(self._build, ReferencesBuilds.HG38, int(row[0]))
+        if self._build != DATABASE_BUILD:
+            new_position = CoordinateCoverter.convert(self._build, DATABASE_BUILD, int(row[0]))
 
             if new_position is None:
                 # make the position different from any reference builds

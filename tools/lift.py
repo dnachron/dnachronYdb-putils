@@ -100,9 +100,7 @@ class CoordinateCoverter:
         try:
             this_converter = cls._converter[source][target]
         except KeyError as exc:
-            raise ValueError(
-                f"not support this convention: {source.name.replace('_', '.')} -> {target.name.replace('_', '.')}"
-            ) from exc
+            raise ValueError(f"not support this convention: {source.name} -> {target.name}") from exc
 
         try:
             return this_converter.convert_coordinate("chrY", positions - 1, "+")[0][1] + 1
@@ -114,7 +112,7 @@ class CoordinateCoverter:
         print("supported builds convert:")
         for left in cls._converter.keys():
             for right in cls._converter[left].keys():
-                print(f"{left.name.replace('_', '.')} -> {right.name.replace('_', '.')}")
+                print(f"{left.name} -> {right.name}")
 
     @classmethod
     def check(cls, source_build, target_build):
@@ -124,12 +122,10 @@ class CoordinateCoverter:
 class LiftOverPositions:
     def __init__(self, input, output, source_build, target_build, hide_header) -> None:
         if not CoordinateCoverter.check(source_build, target_build):
-            raise ValueError(
-                f"not support this convention: {source_build.name.replace('_', '.')} -> {target_build.name.replace('_', '.')}"
-            )
+            raise ValueError(f"not support this convention: {source_build.name} -> {target_build.name}")
         self._converter = partial(CoordinateCoverter.convert, source_build, target_build)
-        self._source_build = source_build.name.replace("_", ".")
-        self._target_build = target_build.name.replace("_", ".")
+        self._source_build = source_build.name
+        self._target_build = target_build.name
 
         self._csv_reader = csv.reader(input)
         self._csv_writer = csv.writer(output)
