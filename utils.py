@@ -2,6 +2,8 @@
 import os
 import sys
 
+from tools.lift import CoordinateCoverter, LiftOverPositions
+
 # check before start django
 if not os.path.exists(os.path.join(os.path.dirname(os.path.realpath(__file__)), "dnachronYdb/dnachronYdb.sqlite3")):
     print("Can't find the database file dnachronYdb.sqlite3 at dnachronYdb/dnachronYdb.sqlite3.")
@@ -62,6 +64,21 @@ def annot(args, parsers):
     mutation_annotate.annotate()
 
 
+def lift(args, parsers):
+    if args.list:
+        CoordinateCoverter.list()
+
+    if args.input is None or args.source_build is None or args.target_build is None:
+        if not args.list:
+            parsers.print_help()
+        return
+
+    lift_over = LiftOverPositions(
+        args.input, args.output, convert_build(args.source_build), convert_build(args.target_build), args.hide_header
+    )
+    lift_over.lift_over()
+
+
 if __name__ == "__main__":
     if sys.version_info < (3, 7):
         print("ERROR: Please upgrade your Python version to 3.7.0 or higher")
@@ -102,7 +119,8 @@ if __name__ == "__main__":
         "annot",
         description="Annotate positions with mutation name and other info. \
             The input should be a list of mutations: position, ancestral, derived, seprated by comma, and each mutation one line. \
-                Or simply use csv format file. You can test with testdata/hg38_mutation.csv. Duplicated mutations will be removed.",
+                Or simply use csv format file. You can test with hg19_mutation.csv and hg38_mutation.csv in testdata. \
+                    Duplicated mutations will be removed.",
         help="annotate positions with mutation name and other info",
     )
     parsers["annot"].add_argument(
@@ -141,6 +159,44 @@ if __name__ == "__main__":
     parsers["annot"].add_argument("-H", "--hide_header", action="store_true", help="don't output header")
 
     parsers["annot"].set_defaults(func=annot)
+
+    # create the parser for the "annot" command
+    parsers["lift"] = subparsers.add_parser(
+        "lift",
+        description="Lift over positions between different reference builds. \
+            The input should be a list of positions, each position one line. And ignore extra columns.\
+                You can test with testdata/hg19_mutation.csv. Duplicated positions will be removed.",
+        help="lift over positions between different reference builds",
+    )
+    parsers["lift"].add_argument("-l", "--list", action="store_true", help="list all support lift over builds")
+    parsers["lift"].add_argument(
+        "input",
+        type=argparse.FileType("rt"),
+        nargs="?",
+        help="the input file, you can input from STDIN by -",
+    )
+    parsers["lift"].add_argument(
+        "-s",
+        "--source_build",
+        choices=["hg19", "hg38", "cp086569.1", "cp086569.2"],
+        help="the souce reference build",
+    )
+    parsers["lift"].add_argument(
+        "-t",
+        "--target_build",
+        choices=["hg19", "hg38", "cp086569.1", "cp086569.2"],
+        help="the target reference build",
+    )
+    parsers["lift"].add_argument(
+        "-o",
+        "--output",
+        type=argparse.FileType("wt"),
+        nargs="?",
+        default="-",
+        help="the output file, default to STDOUT if not specified",
+    )
+    parsers["lift"].add_argument("-H", "--hide_header", action="store_true", help="don't output header")
+    parsers["lift"].set_defaults(func=lift)
 
     args = parser.parse_args()
     if "func" in args:
