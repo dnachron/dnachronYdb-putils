@@ -22,22 +22,15 @@ from tools.vcf import generate_vcf
 from tools.annotate import AnnotateMutation
 from tools.lift import CoordinateCoverter, LiftOverPositions
 from tools.transfer import TransferMutation
-from tools.constant import ReferencesBuilds
+from tools.constant import DATABASE_BUILD, ReferencesBuilds
 
 
 def convert_build(build):
-    if build == "hg19":
-        result = ReferencesBuilds.HG19
-    elif build == "hg38":
-        result = ReferencesBuilds.HG38
-    elif build == "cp086569.1":
-        result = ReferencesBuilds.CP086569_1
-    elif build == "cp086569.2":
-        result = ReferencesBuilds.CP086569_2
-    else:
-        raise ValueError(f"not supported build {build}")
+    for reference_build in ReferencesBuilds:
+        if build == reference_build.name.lower():
+            return reference_build
 
-    return result
+    raise ValueError(f"not supported build {build}")
 
 
 def vcf(args, parsers):
@@ -70,7 +63,7 @@ def lift(args, parsers):
 
     if args.input is None or args.source_build is None or args.target_build is None:
         if not args.list:
-            parsers.print_help()
+            parsers["lift"].print_help()
         return
 
     lift_over = LiftOverPositions(
@@ -85,7 +78,7 @@ def trans(args, parsers):
         return
 
     mutation_transfer = TransferMutation(
-        args.input, args.output, convert_build(args.build), args.hide_header, args.hide_hg38, args.hide_real_name
+        args.input, args.output, convert_build(args.build), args.hide_header, args.hide_db_pos, args.hide_real_name
     )
     mutation_transfer.transfer()
 
@@ -152,9 +145,9 @@ if __name__ == "__main__":
         "-b",
         "--build",
         type=str.lower,
-        choices=["hg19", "hg38", "cp086569.1", "cp086569.2"],
-        default="hg38",
-        help="the reference build, default is hg38",
+        choices=[build.name.lower() for build in ReferencesBuilds],
+        default=DATABASE_BUILD.name.lower(),
+        help=f"the reference build, default is {DATABASE_BUILD.name.lower()}",
     )
     parsers["annot"].add_argument(
         "-r",
@@ -198,13 +191,16 @@ if __name__ == "__main__":
         "-b",
         "--build",
         type=str.lower,
-        choices=["hg19", "hg38", "cp086569.1", "cp086569.2"],
-        default="hg38",
-        help="the reference build, default is hg38",
+        choices=[build.name.lower() for build in ReferencesBuilds],
+        default=DATABASE_BUILD.name.lower(),
+        help=f"the reference build, default is {DATABASE_BUILD.name.lower()}",
     )
     parsers["trans"].add_argument("-H", "--hide_header", action="store_true", help="don't output header")
     parsers["trans"].add_argument(
-        "-B", "--hide_hg38", action="store_true", help="don't output hg38 position if build is not hg38"
+        "-B",
+        "--hide_db_pos",
+        action="store_true",
+        help=f"don't output {DATABASE_BUILD.name} position if build is not {DATABASE_BUILD.name}",
     )
     parsers["trans"].add_argument(
         "-N", "--hide_real_name", action="store_true", help="don't output real name in database"
@@ -230,13 +226,13 @@ if __name__ == "__main__":
     parsers["lift"].add_argument(
         "-s",
         "--source_build",
-        choices=["hg19", "hg38", "cp086569.1", "cp086569.2"],
+        choices=[build.name.lower() for build in ReferencesBuilds],
         help="the souce reference build",
     )
     parsers["lift"].add_argument(
         "-t",
         "--target_build",
-        choices=["hg19", "hg38", "cp086569.1", "cp086569.2"],
+        choices=[build.name.lower() for build in ReferencesBuilds],
         help="the target reference build",
     )
     parsers["lift"].add_argument(

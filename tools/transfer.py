@@ -9,12 +9,12 @@ from .constant import DATABASE_BUILD, HEADER
 
 
 class TransferMutation:
-    def __init__(self, input, output, build, hide_header, hide_hg38, hide_real_name) -> None:
+    def __init__(self, input, output, build, hide_header, hide_database_position, hide_real_name) -> None:
         self._csv_reader = csv.reader(input)
         self._csv_writer = csv.writer(output)
         self._build = build
         self._hide_header = hide_header
-        self._hide_hg38 = hide_hg38
+        self._hide_database_position = hide_database_position
         self._hide_real_name = hide_real_name
         self._mutations = {}
 
@@ -55,7 +55,7 @@ class TransferMutation:
             if not self._hide_real_name:
                 header_row.append(HEADER[6])
 
-            if not self._hide_hg38 and not self._build == DATABASE_BUILD:
+            if not self._hide_database_position and not self._build == DATABASE_BUILD:
                 header_row.append(f"{DATABASE_BUILD.name}_POS")
 
             header_row.append(f"{self._build.name}_POS")
@@ -76,7 +76,7 @@ class TransferMutation:
             if self._build == DATABASE_BUILD:
                 result.append(mutation[2])
             else:
-                if not self._hide_hg38:
+                if not self._hide_database_position:
                     result.append(mutation[2])
 
                 result.append(CoordinateCoverter.convert(DATABASE_BUILD, self._build, mutation[2]))
