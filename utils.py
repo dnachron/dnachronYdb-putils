@@ -19,6 +19,23 @@ application = get_wsgi_application()
 import argparse
 
 from tools.vcf import generate_vcf
+from tools.annotate import AnnotateMutation
+from tools.constant import ReferencesBuilds
+
+
+def convert_build(build):
+    if build == "hg19":
+        result = ReferencesBuilds.HG19
+    elif build == "hg38":
+        result = ReferencesBuilds.HG38
+    elif build == "cp086569.1":
+        result = ReferencesBuilds.CP086569_1
+    elif build == "cp086569.2":
+        result = ReferencesBuilds.CP086569_2
+    else:
+        raise ValueError(f"not supported build {build}")
+
+    return result
 
 
 def vcf(args, parsers):
@@ -29,10 +46,27 @@ def vcf(args, parsers):
 
 
 def annot(args, parsers):
-    print(args)
+    if args.input is None:
+        parsers["annot"].print_help()
+        return
+
+    mutation_annotate = AnnotateMutation(
+        args.input,
+        args.output,
+        args.reference,
+        convert_build(args.build),
+        args.verbose,
+        args.appendix,
+        args.hide_header,
+    )
+    mutation_annotate.annotate()
 
 
 if __name__ == "__main__":
+    if sys.version_info < (3, 7):
+        print("ERROR: Please upgrade your Python version to 3.7.0 or higher")
+        sys.exit(1)
+
     parser = argparse.ArgumentParser()
     subparsers = parser.add_subparsers()
     parsers = {}
@@ -66,9 +100,46 @@ if __name__ == "__main__":
     # create the parser for the "annot" command
     parsers["annot"] = subparsers.add_parser(
         "annot",
-        description="Annotate positions with mutation name and other info.",
+        description="Annotate positions with mutation name and other info. \
+            The input should be a list of mutations: position, ancestral, derived, seprated by comma, and each mutation one line. \
+                Or simply use csv format file. You can test with testdata/hg38_mutation.csv. Duplicated mutations will be removed.",
         help="annotate positions with mutation name and other info",
     )
+    parsers["annot"].add_argument(
+        "input",
+        type=argparse.FileType("rt"),
+        nargs="?",
+        help="the input file, you can input from STDIN by -",
+    )
+    parsers["annot"].add_argument(
+        "-o",
+        "--output",
+        type=argparse.FileType("wt"),
+        nargs="?",
+        default="-",
+        help="the output file, default to STDOUT if not specified",
+    )
+    parsers["annot"].add_argument(
+        "-b",
+        "--build",
+        type=str.lower,
+        choices=["hg19", "hg38", "cp086569.1", "cp086569.2"],
+        default="hg38",
+        help="the reference build, default is hg38",
+    )
+    parsers["annot"].add_argument(
+        "-r",
+        "--reference",
+        type=str,
+        nargs="?",
+        help="if you provide reference file, it can try to normalize INDELs before annotate",
+    )
+    parsers["annot"].add_argument(
+        "-v", "--verbose", action="store_true", help="include all duplicated names, otherwise only the first name"
+    )
+    parsers["annot"].add_argument("-a", "--appendix", action="store_true", help="annotate appendix info")
+    parsers["annot"].add_argument("-H", "--hide_header", action="store_true", help="don't output header")
+
     parsers["annot"].set_defaults(func=annot)
 
     args = parser.parse_args()

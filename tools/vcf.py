@@ -79,10 +79,6 @@ def _generate_vcf(verbose, file_exc):
 
 def generate_vcf(output, output_type, verbose):
     # check args first
-    if sys.version_info < (3, 7):
-        print("ERROR: Please upgrade your Python version to 3.7.0 or higher")
-        sys.exit(1)
-
     if output_type is None and output.name.lower().endswith(".gz") or output_type is not None and output_type == "z":
         if isinstance(output, io.TextIOWrapper):
             print(

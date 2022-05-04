@@ -2,7 +2,9 @@ dnachronYdb
 .vscode
 .vcf
 .gz
+.csv
 !resources
+!testdata
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
