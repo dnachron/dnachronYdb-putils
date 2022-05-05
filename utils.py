@@ -227,12 +227,14 @@ if __name__ == "__main__":
         "-s",
         "--source_build",
         choices=[build.name.lower() for build in ReferencesBuilds],
+        type=str.lower,
         help="the souce reference build",
     )
     parsers["lift"].add_argument(
         "-t",
         "--target_build",
         choices=[build.name.lower() for build in ReferencesBuilds],
+        type=str.lower,
         help="the target reference build",
     )
     parsers["lift"].add_argument(

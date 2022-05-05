@@ -6,7 +6,7 @@ from functools import partial
 
 import pyliftover
 
-from .constant import ReferencesBuilds
+from .constant import OVER_CHAIN_MAP, ReferencesBuilds
 
 
 class LazyObject:
@@ -72,28 +72,18 @@ class LazyObject:
     __contains__ = new_method_proxy(operator.contains)
 
 
+def _fill_converter(converter: defaultdict(dict)):
+    current_folder = os.path.dirname(os.path.abspath(__file__))
+    for (left, right), relative_path in OVER_CHAIN_MAP.items():
+        converter[left][right] = LazyObject(
+            factory=partial(pyliftover.LiftOver, os.path.join(current_folder, relative_path), use_web=False)
+        )
+
+
 class CoordinateCoverter:
 
     _converter = defaultdict(dict)
-    current_folder = os.path.dirname(os.path.abspath(__file__))
-    _converter[ReferencesBuilds.HG19][ReferencesBuilds.HG38] = LazyObject(
-        factory=partial(
-            pyliftover.LiftOver, os.path.join(current_folder, "../resources/hg19ToHg38.over.chain.gz"), use_web=False
-        )
-    )
-    _converter[ReferencesBuilds.HG38][ReferencesBuilds.HG19] = LazyObject(
-        factory=partial(
-            pyliftover.LiftOver, os.path.join(current_folder, "../resources/hg38ToHg19.over.chain.gz"), use_web=False
-        )
-    )
-    _converter[ReferencesBuilds.HG38][ReferencesBuilds.CP086569_1] = LazyObject(
-        factory=partial(
-            pyliftover.LiftOver,
-            os.path.join(current_folder, "../resources/hg38_chrYTocp086569_1.over.chain.gz"),
-            use_web=False,
-        )
-    )
-    del current_folder
+    _fill_converter(_converter)
 
     @classmethod
     def convert(cls, source: ReferencesBuilds, target: ReferencesBuilds, positions: int):
@@ -110,8 +100,8 @@ class CoordinateCoverter:
     @classmethod
     def list(cls):
         print("supported builds convert:")
-        for left in cls._converter.keys():
-            for right in cls._converter[left].keys():
+        for left, right_dict in cls._converter.items():
+            for right in right_dict.keys():
                 print(f"{left.name} -> {right.name}")
 
     @classmethod

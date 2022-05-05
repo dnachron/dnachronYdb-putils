@@ -1,4 +1,5 @@
 from enum import Enum, auto
+import os
 from types import DynamicClassAttribute
 
 
@@ -6,6 +7,10 @@ HEADER = ["POS", "REF", "ALT", "NORM_POS", "NORM_REF", "NORM_ALT", "ID", "YCC", 
 
 
 class ReferencesBuilds(Enum):
+    """
+    The build name's "_" character will be replaced by "."
+    """
+
     HG19 = auto()
     HG38 = auto()
     CP086569_1 = auto()
@@ -16,5 +21,14 @@ class ReferencesBuilds(Enum):
         name = super().name
         return name.replace("_", ".")
 
+
+OVER_CHAIN_MAP = {
+    (ReferencesBuilds.HG19, ReferencesBuilds.HG38): "../resources/hg19ToHg38.over.chain.gz",
+    (ReferencesBuilds.HG38, ReferencesBuilds.HG19): "../resources/hg38ToHg19.over.chain.gz",
+    (ReferencesBuilds.HG38, ReferencesBuilds.CP086569_1): "../resources/hg38_chrYTocp086569_1.over.chain.gz",
+    (ReferencesBuilds.CP086569_1, ReferencesBuilds.HG38): "../resources/cp086569_1Tohg38_chrY.over.chain.gz",
+    (ReferencesBuilds.HG38, ReferencesBuilds.CP086569_2): "../resources/hg38_chrYTocp086569_2.over.chain.gz",
+    (ReferencesBuilds.CP086569_2, ReferencesBuilds.HG38): "../resources/cp086569_2Tohg38_chrY.over.chain.gz",
+}
 
 DATABASE_BUILD = ReferencesBuilds.HG38
