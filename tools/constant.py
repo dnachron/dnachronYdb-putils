@@ -29,6 +29,8 @@ OVER_CHAIN_MAP = {
     (ReferencesBuilds.CP086569_1, ReferencesBuilds.HG38): "../resources/cp086569_1Tohg38_chrY.over.chain.gz",
     (ReferencesBuilds.HG38, ReferencesBuilds.CP086569_2): "../resources/hg38_chrYTocp086569_2.over.chain.gz",
     (ReferencesBuilds.CP086569_2, ReferencesBuilds.HG38): "../resources/cp086569_2Tohg38_chrY.over.chain.gz",
+    (ReferencesBuilds.CP086569_2, ReferencesBuilds.CP086569_1): "../resources/cp086569_2Tocp086569_1.over.chain.gz",
+    (ReferencesBuilds.CP086569_1, ReferencesBuilds.CP086569_2): "../resources/cp086569_1Tocp086569_2.over.chain.gz",
 }
 
 DATABASE_BUILD = ReferencesBuilds.HG38

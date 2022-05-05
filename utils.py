@@ -154,7 +154,7 @@ if __name__ == "__main__":
         "--reference",
         type=str,
         nargs="?",
-        help="if you provide reference file, it can try to normalize INDELs before annotate",
+        help=f"if you provide {DATABASE_BUILD.name} reference file, it can try to normalize INDELs before annotate",
     )
     parsers["annot"].add_argument(
         "-v", "--verbose", action="store_true", help="include all duplicated names, otherwise only the first name"
@@ -213,7 +213,7 @@ if __name__ == "__main__":
         "lift",
         description="Lift over positions between different reference builds. \
             The input should be a list of positions, each position one line. And ignore extra columns.\
-                You can test with testdata/hg19_mutation.csv. Duplicated positions will be removed.",
+                You can test with hg19_mutation.csv and hg38_mutation.csv in testdata. Duplicated positions will be removed.",
         help="lift over positions between different reference builds",
     )
     parsers["lift"].add_argument("-l", "--list", action="store_true", help="list all support lift over builds")

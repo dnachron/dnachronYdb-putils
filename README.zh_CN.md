@@ -1,5 +1,5 @@
 # dnachronYdb-putils
-操作**dnachronYdb**数据库的python工具.
+操作**dnachronYdb**数据库的python工具集.
 
 ## README.md
 - en [English](README.md)
@@ -23,7 +23,7 @@
 - <https://www.dnachron.cn> 基因志中国站
 
 ## 环境准备
-### python
+### 安装python
 需要安装[python](https://www.python.org/downloads/)，或直接使用[anaconda](https://docs.anaconda.com/anaconda/install/)环境  
 请确保python版本>3.7.0
 ```
@@ -33,7 +33,7 @@ python3 --version
 ```
 python --version
 ```
-### 安装依赖
+### 安装python依赖包
 ```
 pip3 install django pyfaidx pyliftover
 ```
@@ -139,7 +139,7 @@ optional arguments:
   -b {hg19,hg38,cp086569.1,cp086569.2}, --build {hg19,hg38,cp086569.1,cp086569.2}
                         the reference build, default is hg38
   -r [REFERENCE], --reference [REFERENCE]
-                        if you provide reference file, it can try to normalize INDELs before annotate
+                        if you provide HG38 reference file, it can try to normalize INDELs before annotate
   -v, --verbose         include all duplicated names, otherwise only the first name
   -a, --appendix        annotate appendix info
   -H, --hide_header     don't output header
@@ -156,3 +156,73 @@ python utils.py trans -b cp086569.2 testdata/names.csv
 | FT145229 | FT145229 | 5103294  | 4782829        | T        | C    |
 | ft299719 | FT299719 | 26591050 | 27403001       | C        | A    |
 | F793     | F793     | 6787706  | 6440023        | T        | C    |
+#### 参数
+```
+usage: utils.py trans [-h] [-o [OUTPUT]] [-b {hg19,hg38,cp086569.1,cp086569.2}] [-H] [-B] [-N] [input]
+
+Transfer mutation name to position, ancestral, derived. The input should be a list of mutation names, each name one line. Or simply use csv format file. You can test with testdata/names.csv. Duplicated names
+will be removed.
+
+positional arguments:
+  input                 the input file, you can input from STDIN by -
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -o [OUTPUT], --output [OUTPUT]
+                        the output file, default to STDOUT if not specified
+  -b {hg19,hg38,cp086569.1,cp086569.2}, --build {hg19,hg38,cp086569.1,cp086569.2}
+                        the reference build, default is hg38
+  -H, --hide_header     don't output header
+  -B, --hide_db_pos     don't output HG38 position if build is not HG38
+  -N, --hide_real_name  don't output real name in database
+```
+### lift
+转换坐标到不同参考序列
+```
+python utils.py lift -s hg38 -t cp086569.2 testdata/hg38_mutation.csv
+```
+| position | CP086569.2 |
+| :------- | :--------- |
+| 13871775 | 14778426   |
+| 17397552 | 18304070   |
+| 6848774  | 6501097    |
+| 8933332  | 8589436    |
+| 8933333  | 8589437    |
+| 8933332  | 8589436    |
+| 14735008 | 15641644   |
+#### 当前支持的转换
+```
+python utils.py lift -l
+```
+```
+supported builds convert:
+HG19 -> HG38
+HG38 -> HG19
+HG38 -> CP086569.1
+HG38 -> CP086569.2
+CP086569.1 -> HG38
+CP086569.1 -> CP086569.2
+CP086569.2 -> HG38
+CP086569.2 -> CP086569.1
+```
+#### 参数
+```
+usage: utils.py lift [-h] [-l] [-s {hg19,hg38,cp086569.1,cp086569.2}] [-t {hg19,hg38,cp086569.1,cp086569.2}] [-o [OUTPUT]] [-H] [input]
+
+Lift over positions between different reference builds. The input should be a list of positions, each position one line. And ignore extra columns. You can test with hg19_mutation.csv and hg38_mutation.csv in
+testdata. Duplicated positions will be removed.
+
+positional arguments:
+  input                 the input file, you can input from STDIN by -
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -l, --list            list all support lift over builds
+  -s {hg19,hg38,cp086569.1,cp086569.2}, --source_build {hg19,hg38,cp086569.1,cp086569.2}
+                        the souce reference build
+  -t {hg19,hg38,cp086569.1,cp086569.2}, --target_build {hg19,hg38,cp086569.1,cp086569.2}
+                        the target reference build
+  -o [OUTPUT], --output [OUTPUT]
+                        the output file, default to STDOUT if not specified
+  -H, --hide_header     don't output header
+```
