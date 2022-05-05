@@ -29,11 +29,11 @@ def _generate_vcf(verbose, file_exc):
         header = header_exc.readlines()
 
     if isinstance(file_exc, io.TextIOWrapper):
-        cm = nullcontext(file_exc)
+        context_manager = nullcontext(file_exc)
     else:
-        cm = io.TextIOWrapper(file_exc, encoding="utf_8")
+        context_manager = io.TextIOWrapper(file_exc, encoding="utf_8")
 
-    with cm as text_file_exc:
+    with context_manager as text_file_exc:
         text_file_exc.writelines(header)
 
         query = (
@@ -86,9 +86,9 @@ def generate_vcf(output, output_type, verbose):
             )
             sys.exit(1)
 
-        cm = gzip.open(output, "wb")
+        context_manager = gzip.open(output, "wb")
     else:
-        cm = nullcontext(output)
+        context_manager = nullcontext(output)
 
-    with cm as file_exc:
+    with context_manager as file_exc:
         _generate_vcf(verbose, file_exc)

@@ -9,9 +9,9 @@ from .constant import DATABASE_BUILD, HEADER
 
 
 class TransferMutation:
-    def __init__(self, input, output, build, hide_header, hide_database_position, hide_real_name) -> None:
-        self._csv_reader = csv.reader(input)
-        self._csv_writer = csv.writer(output)
+    def __init__(self, input_file, output_file, build, hide_header, hide_database_position, hide_real_name) -> None:
+        self._csv_reader = csv.reader(input_file)
+        self._csv_writer = csv.writer(output_file)
         self._build = build
         self._hide_header = hide_header
         self._hide_database_position = hide_database_position

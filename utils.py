@@ -1,4 +1,6 @@
 # Instatiate Django and import settings
+# pylint: disable=wrong-import-position
+# pylint: disable=wrong-import-order
 import os
 import sys
 
@@ -33,16 +35,16 @@ def convert_build(build):
     raise ValueError(f"not supported build {build}")
 
 
-def vcf(args, parsers):
+def vcf(args, sub_parsers):
     if args.output is None:
-        parsers["vcf"].print_help()
+        sub_parsers["vcf"].print_help()
         return
     generate_vcf(args.output, args.output_type, args.verbose)
 
 
-def annot(args, parsers):
+def annot(args, sub_parsers):
     if args.input is None:
-        parsers["annot"].print_help()
+        sub_parsers["annot"].print_help()
         return
 
     mutation_annotate = AnnotateMutation(
@@ -57,13 +59,13 @@ def annot(args, parsers):
     mutation_annotate.annotate()
 
 
-def lift(args, parsers):
+def lift(args, sub_parsers):
     if args.list:
         CoordinateCoverter.list()
 
     if args.input is None or args.source_build is None or args.target_build is None:
         if not args.list:
-            parsers["lift"].print_help()
+            sub_parsers["lift"].print_help()
         return
 
     lift_over = LiftOverPositions(
@@ -72,9 +74,9 @@ def lift(args, parsers):
     lift_over.lift_over()
 
 
-def trans(args, parsers):
+def trans(args, sub_parsers):
     if args.input is None:
-        parsers["trans"].print_help()
+        sub_parsers["trans"].print_help()
         return
 
     mutation_transfer = TransferMutation(

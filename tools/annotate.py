@@ -112,9 +112,9 @@ def mutation_normalize(mutation, genes, with_out_check_ref=False):
 
 
 class AnnotateMutation:
-    def __init__(self, input, output, reference, build, verbose, appendix, hide_header) -> None:
-        self._csv_reader = csv.reader(input)
-        self._csv_writer = csv.writer(output)
+    def __init__(self, input_file, output_file, reference, build, verbose, appendix, hide_header) -> None:
+        self._csv_reader = csv.reader(input_file)
+        self._csv_writer = csv.writer(output_file)
         if reference is not None:
             self._genes = Fasta(reference, rebuild=False)
         else:

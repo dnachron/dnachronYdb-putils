@@ -6,7 +6,6 @@ from functools import partial
 import pyliftover
 
 from django.utils.functional import SimpleLazyObject
-from sqlalchemy import true
 
 from .constant import OVER_CHAIN_MAP, ReferencesBuilds
 
@@ -52,15 +51,15 @@ class CoordinateCoverter:
 
 
 class LiftOverPositions:
-    def __init__(self, input, output, source_build, target_build, hide_header) -> None:
+    def __init__(self, input_file, output_file, source_build, target_build, hide_header) -> None:
         if not CoordinateCoverter.check(source_build, target_build):
             raise ValueError(f"not support this convention: {source_build.name} -> {target_build.name}")
         self._converter = partial(CoordinateCoverter.convert, source_build, target_build)
         self._source_build = source_build.name
         self._target_build = target_build.name
 
-        self._csv_reader = csv.reader(input)
-        self._csv_writer = csv.writer(output)
+        self._csv_reader = csv.reader(input_file)
+        self._csv_writer = csv.writer(output_file)
         self._hide_header = hide_header
         self._positions = []
 

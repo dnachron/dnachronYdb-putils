@@ -1,5 +1,4 @@
 from enum import Enum, auto
-import os
 from types import DynamicClassAttribute
 
 
@@ -17,7 +16,7 @@ class ReferencesBuilds(Enum):
     CP086569_2 = auto()
 
     @DynamicClassAttribute
-    def name(self):
+    def name(self):  # pylint: disable=function-redefined
         name = super().name
         return name.replace("_", ".")
 
