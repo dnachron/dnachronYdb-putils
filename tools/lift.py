@@ -10,7 +10,7 @@ from django.utils.functional import SimpleLazyObject
 from .constant import OVER_CHAIN_MAP, ReferencesBuilds
 
 
-def _fill_converter(converter: defaultdict(dict), lazy=True):
+def _fill_converter(converter: dict, lazy=True):
     current_folder = os.path.dirname(os.path.abspath(__file__))
     for (left, right), relative_path in OVER_CHAIN_MAP.items():
         if lazy:

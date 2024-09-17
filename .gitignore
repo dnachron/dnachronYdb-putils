@@ -1,10 +1,14 @@
 dnachronYdb
+ymutations
 .vscode
 .vcf
 .gz
 .csv
 !resources
 !testdata
+
+Pipfile
+Pipfile.lock
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

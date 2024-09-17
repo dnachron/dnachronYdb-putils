@@ -1,12 +1,25 @@
-# Instatiate Django and import settings
-# pylint: disable=wrong-import-position
-# pylint: disable=wrong-import-order
+#!/usr/bin/env python3
+# ruff: noqa: E402
 import os
 import sys
 
 # check before start django
-if not os.path.exists(os.path.join(os.path.dirname(os.path.realpath(__file__)), "dnachronYdb/dnachronYdb.sqlite3")):
-    print("Can't find the database file dnachronYdb.sqlite3 at dnachronYdb/dnachronYdb.sqlite3.")
+if not (
+    os.path.exists(
+        os.path.join(
+            os.path.dirname(os.path.realpath(__file__)),
+            "dnachronYdb/dnachronYdb.sqlite3",
+        )
+    )
+    or os.path.exists(
+        os.path.join(
+            os.path.dirname(os.path.realpath(__file__)), "ymutations/ymutations.sqlite3"
+        )
+    )
+):
+    print(
+        "Can't find the database file dnachronYdb/dnachronYdb.sqlite3 or ymutations/ymutations.sqlite3."
+    )
     sys.exit(1)
 
 # mark django settings module as settings.py
@@ -20,14 +33,19 @@ application = get_wsgi_application()
 # self program start here
 import argparse
 
+from settings import DATABASE_BUILD
+
 from tools.vcf import generate_vcf
 from tools.annotate import AnnotateMutation
 from tools.lift import CoordinateCoverter, LiftOverPositions
 from tools.transfer import TransferMutation
-from tools.constant import DATABASE_BUILD, ReferencesBuilds
+from tools.constant import ReferencesBuilds
 
 
 def convert_build(build):
+    if build.lower() in (ReferencesBuilds.T2T.name.lower(), ReferencesBuilds.HS1.name.lower()):
+        return ReferencesBuilds.CP086569_2
+
     for reference_build in ReferencesBuilds:
         if build == reference_build.name.lower():
             return reference_build
@@ -69,7 +87,11 @@ def lift(args, sub_parsers):
         return
 
     lift_over = LiftOverPositions(
-        args.input, args.output, convert_build(args.source_build), convert_build(args.target_build), args.hide_header
+        args.input,
+        args.output,
+        convert_build(args.source_build),
+        convert_build(args.target_build),
+        args.hide_header,
     )
     lift_over.lift_over()
 
@@ -80,7 +102,12 @@ def trans(args, sub_parsers):
         return
 
     mutation_transfer = TransferMutation(
-        args.input, args.output, convert_build(args.build), args.hide_header, args.hide_db_pos, args.hide_real_name
+        args.input,
+        args.output,
+        convert_build(args.build),
+        args.hide_header,
+        args.hide_db_pos,
+        args.hide_real_name,
     )
     mutation_transfer.transfer()
 
@@ -91,6 +118,7 @@ if __name__ == "__main__":
         sys.exit(1)
 
     parser = argparse.ArgumentParser()
+    parser.description = "A tool for Y-DNA mutation annotation and liftover. With this tool, you can use t2t or hs1 as aliases for CP086569.2."
     subparsers = parser.add_subparsers()
     parsers = {}
 
@@ -108,7 +136,10 @@ if __name__ == "__main__":
         help="the output file, you can output to STDOUT by -",
     )
     parsers["vcf"].add_argument(
-        "-v", "--verbose", action="store_true", help="include all duplicated names, otherwise only the first name"
+        "-v",
+        "--verbose",
+        action="store_true",
+        help="include all duplicated names, otherwise only the first name",
     )
     parsers["vcf"].add_argument(
         "-O",
@@ -159,10 +190,17 @@ if __name__ == "__main__":
         help=f"if you provide {DATABASE_BUILD.name} reference file, it can try to normalize INDELs before annotate",
     )
     parsers["annot"].add_argument(
-        "-v", "--verbose", action="store_true", help="include all duplicated names, otherwise only the first name"
+        "-v",
+        "--verbose",
+        action="store_true",
+        help="include all duplicated names, otherwise only the first name",
     )
-    parsers["annot"].add_argument("-a", "--appendix", action="store_true", help="annotate appendix info")
-    parsers["annot"].add_argument("-H", "--hide_header", action="store_true", help="don't output header")
+    parsers["annot"].add_argument(
+        "-a", "--appendix", action="store_true", help="annotate appendix info"
+    )
+    parsers["annot"].add_argument(
+        "-H", "--hide_header", action="store_true", help="don't output header"
+    )
 
     parsers["annot"].set_defaults(func=annot)
 
@@ -197,7 +235,9 @@ if __name__ == "__main__":
         default=DATABASE_BUILD.name.lower(),
         help=f"the reference build, default is {DATABASE_BUILD.name.lower()}",
     )
-    parsers["trans"].add_argument("-H", "--hide_header", action="store_true", help="don't output header")
+    parsers["trans"].add_argument(
+        "-H", "--hide_header", action="store_true", help="don't output header"
+    )
     parsers["trans"].add_argument(
         "-B",
         "--hide_db_pos",
@@ -205,7 +245,10 @@ if __name__ == "__main__":
         help=f"don't output {DATABASE_BUILD.name} position if build is not {DATABASE_BUILD.name}",
     )
     parsers["trans"].add_argument(
-        "-N", "--hide_real_name", action="store_true", help="don't output real name in database"
+        "-N",
+        "--hide_real_name",
+        action="store_true",
+        help="don't output real name in database",
     )
 
     parsers["trans"].set_defaults(func=trans)
@@ -218,7 +261,9 @@ if __name__ == "__main__":
                 You can test with hg19_mutation.csv and hg38_mutation.csv in testdata. Duplicated positions will be removed.",
         help="lift over positions between different reference builds",
     )
-    parsers["lift"].add_argument("-l", "--list", action="store_true", help="list all support lift over builds")
+    parsers["lift"].add_argument(
+        "-l", "--list", action="store_true", help="list all support lift over builds"
+    )
     parsers["lift"].add_argument(
         "input",
         type=argparse.FileType("rt"),
@@ -247,7 +292,9 @@ if __name__ == "__main__":
         default="-",
         help="the output file, default to STDOUT if not specified",
     )
-    parsers["lift"].add_argument("-H", "--hide_header", action="store_true", help="don't output header")
+    parsers["lift"].add_argument(
+        "-H", "--hide_header", action="store_true", help="don't output header"
+    )
     parsers["lift"].set_defaults(func=lift)
 
     args = parser.parse_args()

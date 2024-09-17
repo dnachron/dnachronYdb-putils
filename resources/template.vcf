@@ -1,9 +1,10 @@
 ##fileformat=VCFv4.2
 ##source=www.dnachron.com
-##contig=<ID=chrY,length=57227415>
-##ALT=<ID=*,Description="Represents allele(s) other than hg 38 reference.">
+##contig=<ID=chrY,length=62460029>
+##ALT=<ID=*,Description="Represents allele(s) other than CP086569.2(T2T) reference.">
 ##INFO=<ID=YCC,Number=1,Type=String,Description="YCC Haplogroup if sample is derived">
 ##INFO=<ID=ISOGG,Number=1,Type=String,Description="ISOGG Haplogroup if sample is derived">
 ##INFO=<ID=REF,Number=1,Type=String,Description="the reference of mutation">
 ##INFO=<ID=COMMENT,Number=1,Type=String,Description="the comment of mutation">
+##INFO=<ID=YBROWSE_SYNCED,Number=1,Type=String,Description="the mutation synced to Ybrowse or not">
 #CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO

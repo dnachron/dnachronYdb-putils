@@ -1,5 +1,6 @@
 from django.db import models
 
+
 # Create your models here.
 class YMutations(models.Model):
     class MutationTypeChoices(models.TextChoices):
@@ -19,6 +20,7 @@ class YMutations(models.Model):
     isogg_haplogroup = models.TextField(blank=True, null=True)
     ref = models.TextField(blank=True, null=True)
     comment = models.TextField(blank=True, null=True)
+    ybrowse_synced = models.BooleanField(default=False)
 
     def __str__(self):
         return f"{self.name} ({str(self.position)} {self.ancestral} {self.derived})"
@@ -26,10 +28,14 @@ class YMutations(models.Model):
     class Meta:
         db_table = "ymutation"
         indexes = [
-            models.Index(fields=["name"]),
             models.Index(fields=["position"]),
+            models.Index(fields=["join_date"]),
         ]
-        constraints = [models.UniqueConstraint(fields=["name"], name="%(app_label)s_%(class)s_unique_name")]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["name"], name="%(app_label)s_%(class)s_unique_name"
+            )
+        ]
 
 
 class YErrorMutation(models.Model):
@@ -41,4 +47,8 @@ class YErrorMutation(models.Model):
         indexes = [
             models.Index(fields=["name"]),
         ]
-        constraints = [models.UniqueConstraint(fields=["name"], name="%(app_label)s_%(class)s_unique_name")]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["name"], name="%(app_label)s_%(class)s_unique_name"
+            )
+        ]

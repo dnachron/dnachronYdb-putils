@@ -3,21 +3,34 @@ from operator import itemgetter
 
 from pyfaidx import Fasta
 
+from settings import DATABASE_BUILD, DATABASE_YBROWSE_COLUMN
+from django.db.models import Value, F
+
 from models.models import YMutations
 from tools.lift import CoordinateCoverter
 
-from .constant import DATABASE_BUILD, HEADER
+from .constant import HEADER
 
 
 def _trim_mutation(mutation, ancestral, ancestral_len, derived, derived_len):
     """
     doesn't check common from left to right
     """
-    if ancestral_len > derived_len and ancestral[1 + ancestral_len - derived_len :] == derived[1:]:
+    if (
+        ancestral_len > derived_len
+        and ancestral[1 + ancestral_len - derived_len :] == derived[1:]
+    ):
         return (mutation[0], ancestral[: -derived_len + 1], derived[: -derived_len + 1])
 
-    if ancestral_len < derived_len and ancestral[1:] == derived[1 + derived_len - ancestral_len :]:
-        return (mutation[0], ancestral[: -ancestral_len + 1], derived[: -ancestral_len + 1])
+    if (
+        ancestral_len < derived_len
+        and ancestral[1:] == derived[1 + derived_len - ancestral_len :]
+    ):
+        return (
+            mutation[0],
+            ancestral[: -ancestral_len + 1],
+            derived[: -ancestral_len + 1],
+        )
 
     return None
 
@@ -73,7 +86,9 @@ def mutation_normalize(mutation, genes, with_out_check_ref=False):
         return _trim_same_len(mutation, ancestral, ancestral_len, derived)
 
     if not with_out_check_ref:
-        seq = str(genes["chrY"][mutation[0] - 1 : mutation[0] + ancestral_len - 1]).upper()
+        seq = str(
+            genes["chrY"][mutation[0] - 1 : mutation[0] + ancestral_len - 1]
+        ).upper()
         if seq != ancestral:
             # check if ancestral same with ref
             return None
@@ -112,7 +127,9 @@ def mutation_normalize(mutation, genes, with_out_check_ref=False):
 
 
 class AnnotateMutation:
-    def __init__(self, input_file, output_file, reference, build, verbose, appendix, hide_header) -> None:
+    def __init__(
+        self, input_file, output_file, reference, build, verbose, appendix, hide_header
+    ) -> None:
         self._csv_reader = csv.reader(input_file)
         self._csv_writer = csv.writer(output_file)
         if reference is not None:
@@ -126,6 +143,9 @@ class AnnotateMutation:
         self._mutations = {}
 
     def _record_mutation(self, mutation, mutation_name):
+        if mutation is None:
+            return
+
         key = (mutation.position, mutation.ancestral, mutation.derived)
         if key in self._mutations:
             if self._appendix:
@@ -136,6 +156,7 @@ class AnnotateMutation:
                         mutation.isogg_haplogroup,
                         mutation.ref,
                         mutation.comment,
+                        mutation.ybrowse_synced_unified,
                     ]
                 )
             else:
@@ -144,11 +165,17 @@ class AnnotateMutation:
     def _add_mutation(self, row):
         position = int(row[0])
         if self._build != DATABASE_BUILD:
-            new_position = CoordinateCoverter.convert(self._build, DATABASE_BUILD, int(row[0]))
+            new_position = CoordinateCoverter.convert(
+                self._build, DATABASE_BUILD, int(row[0])
+            )
 
             if new_position is None:
                 # make the position different from any reference builds
-                self._mutations[(position + 80000000, row[1], row[2])] = [row[0], row[1], row[2]]
+                self._mutations[(position + 80000000, row[1], row[2])] = [
+                    row[0],
+                    row[1],
+                    row[2],
+                ]
                 return
             position = new_position
 
@@ -159,7 +186,9 @@ class AnnotateMutation:
 
         # check without ref if needed
         if mutation is None:
-            mutation = mutation_normalize(ori_mutation, self._genes, with_out_check_ref=True)
+            mutation = mutation_normalize(
+                ori_mutation, self._genes, with_out_check_ref=True
+            )
 
         # if can't pass any detect, only use the ori_mutation
         if mutation is None:
@@ -199,11 +228,25 @@ class AnnotateMutation:
                     header = HEADER[:7]
             self._csv_writer.writerow(header)
 
-        query = (
-            YMutations.objects.filter(position__in=map(itemgetter(0), self._mutations.keys()))
-            .order_by("position", "ancestral", "derived", "join_date", "name")
-            .iterator()
-        )
+        if DATABASE_YBROWSE_COLUMN:
+            query = (
+                YMutations.objects.filter(
+                    position__in=map(itemgetter(0), self._mutations.keys())
+                )
+                .order_by("position", "ancestral", "derived", "join_date", "name")
+                .annotate(ybrowse_synced_unified=F("ybrowse_synced"))
+                .iterator()
+            )
+        else:
+            query = (
+                YMutations.objects.filter(
+                    position__in=map(itemgetter(0), self._mutations.keys())
+                )
+                .defer("ybrowse_synced")
+                .annotate(ybrowse_synced_unified=Value(""))
+                .order_by("position", "ancestral", "derived", "join_date", "name")
+                .iterator()
+            )
 
         last_mutation = None
         if self._verbose:

@@ -11,6 +11,9 @@ https://docs.djangoproject.com/en/4.0/ref/settings/
 """
 
 from pathlib import Path
+import os
+
+from tools.constant import ReferencesBuilds
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent
@@ -36,11 +39,19 @@ INSTALLED_APPS = [
 
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
+if os.path.exists(BASE_DIR / "ymutations/ymutations.sqlite3"):
+    database_file = BASE_DIR / "ymutations/ymutations.sqlite3"
+    DATABASE_BUILD = ReferencesBuilds.CP086569_2
+    DATABASE_YBROWSE_COLUMN = True
+else:
+    database_file = BASE_DIR / "dnachronYdb/dnachronYdb.sqlite3"
+    DATABASE_BUILD = ReferencesBuilds.HG38
+    DATABASE_YBROWSE_COLUMN = False
 
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "dnachronYdb/dnachronYdb.sqlite3",
+        "NAME": database_file,
     },
 }
 

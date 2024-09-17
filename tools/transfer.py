@@ -1,15 +1,24 @@
 import csv
 
 from django.db.models.functions import Lower
+from settings import DATABASE_BUILD
 
 from models.models import YMutations
 from tools.lift import CoordinateCoverter
 
-from .constant import DATABASE_BUILD, HEADER
+from .constant import HEADER
 
 
 class TransferMutation:
-    def __init__(self, input_file, output_file, build, hide_header, hide_database_position, hide_real_name) -> None:
+    def __init__(
+        self,
+        input_file,
+        output_file,
+        build,
+        hide_header,
+        hide_database_position,
+        hide_real_name,
+    ) -> None:
         self._csv_reader = csv.reader(input_file)
         self._csv_writer = csv.writer(output_file)
         self._build = build
@@ -33,7 +42,7 @@ class TransferMutation:
         except StopIteration:
             stoped = True
 
-        mutation = YMutations.objects.filter(name=header[0]).first()
+        mutation = YMutations.objects.filter(name=header[0]).values("pk").first()
         if mutation is not None:
             self._add_mutation(header)
             header = None
@@ -79,7 +88,9 @@ class TransferMutation:
                 if not self._hide_database_position:
                     result.append(mutation[2])
 
-                result.append(CoordinateCoverter.convert(DATABASE_BUILD, self._build, mutation[2]))
+                result.append(
+                    CoordinateCoverter.convert(DATABASE_BUILD, self._build, mutation[2])
+                )
 
             result.extend(mutation[3:])
             self._mutations[mutation[0]].extend(result)
