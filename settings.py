@@ -39,14 +39,14 @@ INSTALLED_APPS = [
 
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
-if os.path.exists(BASE_DIR / "ymutations/ymutations.sqlite3"):
-    database_file = BASE_DIR / "ymutations/ymutations.sqlite3"
-    DATABASE_BUILD = ReferencesBuilds.CP086569_2
-    DATABASE_YBROWSE_COLUMN = True
-else:
+if os.path.exists(BASE_DIR / "dnachronYdb/dnachronYdb.sqlite3"):
     database_file = BASE_DIR / "dnachronYdb/dnachronYdb.sqlite3"
     DATABASE_BUILD = ReferencesBuilds.HG38
     DATABASE_YBROWSE_COLUMN = False
+else:
+    database_file = BASE_DIR / "ymutations/ymutations.sqlite3"
+    DATABASE_BUILD = ReferencesBuilds.CP086569_2
+    DATABASE_YBROWSE_COLUMN = True
 
 DATABASES = {
     "default": {

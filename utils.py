@@ -18,7 +18,7 @@ if not (
     )
 ):
     print(
-        "Can't find the database file dnachronYdb/dnachronYdb.sqlite3 or ymutations/ymutations.sqlite3."
+        "Can't find the database file ymutations/ymutations.sqlite3."
     )
     sys.exit(1)
 

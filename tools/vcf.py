@@ -23,7 +23,7 @@ def _generate_vcf(verbose, file_exc):
         return (
             f"chrY\t{mutation.position}\t{name}\t{mutation.ancestral}\t{mutation.derived}\t100\tPASS\t"
             + f"YCC={_unify(mutation.ycc_haplogroup)};ISOGG={_unify(mutation.isogg_haplogroup)};"
-            + f"REF={_unify(mutation.ref)};COMMENT={_unify(mutation.comment)};YBROWSE_SYNCED={_unify(mutation.ybrowse_synced_unified)}\n"
+            + f"REF={_unify(mutation.ref)};COMMENT={_unify(mutation.comment)};YBROWSE_SYNCED={_unify(str(mutation.ybrowse_synced_unified))}\n"
         )
 
     with open(
